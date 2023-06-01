@@ -1,7 +1,6 @@
-package com.enigma.myapplication
+package com.enigma.myapplication.quiz
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity

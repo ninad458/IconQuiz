@@ -1,9 +1,10 @@
-package com.enigma.myapplication
+package com.enigma.myapplication.quiz
 
 import androidx.lifecycle.*
 import com.enigma.myapplication.data.QuizData
 import com.enigma.myapplication.data.QuizDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -13,8 +14,14 @@ class MainViewModel @Inject constructor(
 
     private val _refreshData = MutableLiveData<Unit>(Unit)
 
-    private val _quizObj: LiveData<QuizData> = Transformations.map(_refreshData) {
-        quizDataRepository.fetchNewData()
+    private val _quizObj: LiveData<QuizData> = _refreshData.switchMap {
+        return@switchMap liveData {
+            try {
+                val quizData = quizDataRepository.fetchNewData()
+                emit(quizData)
+            } catch (e: Exception) {
+            }
+        }
     }
 
     private val _disabledKeys = MutableLiveData<Set<Int>>(emptySet())
@@ -38,14 +45,14 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    val quizLogo: LiveData<String> = Transformations.map(_quizObj) {
+    val quizLogo: LiveData<String> = _quizObj.map {
         it.imageUrl
     }
 
     private val _quizAnsAttempt = MutableLiveData<String>()
     val quizAnsAttempt: LiveData<String> get() = _quizAnsAttempt
 
-    val allowSubmit: LiveData<Boolean> = Transformations.map(_quizAnsAttempt) {
+    val allowSubmit: LiveData<Boolean> = (_quizAnsAttempt).map {
         val quizAttemptAns = _quizAnsAttempt.value
         if (quizAttemptAns.isNullOrEmpty()) {
             return@map false
@@ -66,16 +73,21 @@ class MainViewModel @Inject constructor(
     }
 
     fun submit() {
-        try {
-            // show Progress
-            quizDataRepository.submit(_quizObj.value ?: return, _quizAnsAttempt.value ?: return)
-            _refreshData.postValue(Unit)
-            _disabledKeys.postValue(emptySet())
-            _quizAnsAttempt.postValue("")
-        } catch (e: Exception) {
-            // show Error
-        } finally {
-            // hide progress
+        viewModelScope.launch {
+            try {
+                // show Progress
+                quizDataRepository.submit(
+                    _quizObj.value ?: return@launch,
+                    _quizAnsAttempt.value ?: return@launch
+                )
+                _refreshData.postValue(Unit)
+                _disabledKeys.postValue(emptySet())
+                _quizAnsAttempt.postValue("")
+            } catch (e: Exception) {
+                // show Error
+            } finally {
+                // hide progress
+            }
         }
     }
 }

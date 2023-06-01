@@ -5,7 +5,7 @@
 
         <variable
             name="dataStore"
-            type="com.enigma.myapplication.MainViewModel" />
+            type="com.enigma.myapplication.quiz.MainViewModel" />
     </data>
 
 
@@ -14,7 +14,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        tools:context=".quiz.MainActivity">
 
         <ImageView
             android:id="@+id/img_icon"

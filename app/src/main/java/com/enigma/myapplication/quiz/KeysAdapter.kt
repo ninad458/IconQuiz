@@ -1,14 +1,16 @@
-package com.enigma.myapplication
+package com.enigma.myapplication.quiz
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
-import com.enigma.myapplication.KeysAdapter.ButtonViewHolder
+import com.enigma.myapplication.R
+import com.enigma.myapplication.quiz.KeysAdapter.ButtonViewHolder
 
-class KeysAdapter(val keyClickListener: KeyClickListener) :
-    RecyclerView.Adapter<ButtonViewHolder>() {
+class KeysAdapter(
+    private val keyClickListener: KeyClickListener
+) : RecyclerView.Adapter<ButtonViewHolder>() {
 
     private var buttonList: List<KeyModel> = mutableListOf()
 

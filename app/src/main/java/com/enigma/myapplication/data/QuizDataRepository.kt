@@ -6,7 +6,7 @@ import javax.inject.Inject
 
 class QuizDataRepository @Inject constructor(private val localQuizService: LocalQuizService) {
 
-    fun fetchNewData(): QuizData {
+     suspend fun fetchNewData(): QuizData {
         val nextQuiz = localQuizService.getNextQuiz()
 
         val options: List<Char> = generateOptions(nextQuiz.name)
@@ -27,7 +27,7 @@ class QuizDataRepository @Inject constructor(private val localQuizService: Local
         return (random + chars).shuffled()
     }
 
-    fun submit(quizData: QuizData, s: String) {
+    suspend fun submit(quizData: QuizData, s: String) {
         localQuizService.submit(quizData.answer, s)
     }
 }
