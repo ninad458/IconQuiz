@@ -2,9 +2,13 @@ package com.enigma.myapplication
 
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.enigma.myapplication.databinding.ActivityMainBinding
+import com.enigma.myapplication.extensions.setUrl
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -13,11 +17,36 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        val binding = ActivityMainBinding.inflate(LayoutInflater.from(this))
+        setContentView(binding.root)
 
-        viewModel.quizLogo.observe(this, {
+        binding.dataStore = viewModel
 
+        viewModel.quizLogo.observe(this) {
+            binding.imgIcon.setUrl(it)
+        }
+
+        val keysList = binding.listKeys
+
+        val keysAdapter = KeysAdapter(viewModel)
+        keysList.adapter = keysAdapter
+
+        viewModel.quizAnsAttempt.observe(this, {
+            binding.txtQuizInputAns.text = it
         })
+
+        viewModel.allowSubmit.observe(this, {
+            binding.btnSubmit.isEnabled = it
+        })
+
+        viewModel.options.observe(this) { options ->
+            Log.d("xzxzxz", "onCreate: $options")
+            keysAdapter.setData(options)
+        }
+
+        binding.btnSubmit.setOnClickListener {
+            viewModel.submit()
+        }
     }
 }
 

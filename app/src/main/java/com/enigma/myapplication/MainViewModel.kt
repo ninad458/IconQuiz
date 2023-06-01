@@ -1,9 +1,6 @@
 package com.enigma.myapplication
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.enigma.myapplication.data.QuizData
 import com.enigma.myapplication.data.QuizDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,7 +9,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val quizDataRepository: QuizDataRepository
-) : ViewModel() {
+) : ViewModel(), KeyClickListener {
 
     private val _refreshData = MutableLiveData<Unit>(Unit)
 
@@ -20,8 +17,25 @@ class MainViewModel @Inject constructor(
         quizDataRepository.fetchNewData()
     }
 
-    val options = Transformations.map(_quizObj) {
-        it.options
+    private val _disabledKeys = MutableLiveData<Set<Int>>(emptySet())
+
+    val options: LiveData<List<KeyModel>> = MediatorLiveData<List<KeyModel>>().apply {
+        fun handleData() {
+            val quizData = _quizObj.value ?: return
+            postValue(quizData.options.mapIndexed { i, ch ->
+                KeyModel(
+                    i, ch,
+                    _disabledKeys.value.orEmpty().contains(i)
+                )
+            })
+        }
+        addSource(_disabledKeys) {
+            handleData()
+        }
+
+        addSource(_quizObj) {
+            handleData()
+        }
     }
 
     val quizLogo: LiveData<String> = Transformations.map(_quizObj) {
@@ -41,12 +55,14 @@ class MainViewModel @Inject constructor(
     }
 
 
-    fun addEntry(c: Char) {
-        _quizAnsAttempt.postValue(quizAnsAttempt.value + c)
+    override fun addEntry(c: KeyModel) {
+        _quizAnsAttempt.postValue(quizAnsAttempt.value.orEmpty() + c.text)
+        _disabledKeys.postValue(_disabledKeys.value.orEmpty() + c.index)
     }
 
     fun clear() {
         _quizAnsAttempt.postValue("")
+        _disabledKeys.postValue(emptySet())
     }
 
     fun submit() {
@@ -54,6 +70,8 @@ class MainViewModel @Inject constructor(
             // show Progress
             quizDataRepository.submit(_quizObj.value ?: return, _quizAnsAttempt.value ?: return)
             _refreshData.postValue(Unit)
+            _disabledKeys.postValue(emptySet())
+            _quizAnsAttempt.postValue("")
         } catch (e: Exception) {
             // show Error
         } finally {
