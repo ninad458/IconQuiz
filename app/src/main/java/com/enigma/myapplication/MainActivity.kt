@@ -31,16 +31,15 @@ class MainActivity : AppCompatActivity() {
         val keysAdapter = KeysAdapter(viewModel)
         keysList.adapter = keysAdapter
 
-        viewModel.quizAnsAttempt.observe(this, {
+        viewModel.quizAnsAttempt.observe(this) {
             binding.txtQuizInputAns.text = it
-        })
+        }
 
-        viewModel.allowSubmit.observe(this, {
+        viewModel.allowSubmit.observe(this) {
             binding.btnSubmit.isEnabled = it
-        })
+        }
 
         viewModel.options.observe(this) { options ->
-            Log.d("xzxzxz", "onCreate: $options")
             keysAdapter.setData(options)
         }
 
