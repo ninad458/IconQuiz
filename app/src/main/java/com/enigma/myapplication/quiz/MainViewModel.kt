@@ -1,8 +1,8 @@
 package com.enigma.myapplication.quiz
 
 import androidx.lifecycle.*
-import com.enigma.myapplication.data.QuizData
-import com.enigma.myapplication.data.QuizDataRepository
+import com.enigma.myapplication.data.quiz.QuizData
+import com.enigma.myapplication.data.quiz.QuizDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
